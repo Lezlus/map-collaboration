@@ -25,19 +25,25 @@ type AcceptedFileTypes = "image/png" | "image/webp" | "image/jpeg" | "image/tiff
 
 const fileSizeLimitCheck = (bytes: number, mimetype: AcceptedFileTypes): boolean => {
   if (mimetype === "image/png" || mimetype === "image/webp") {
-    if (bytes <= PNG_WEBP_LIMIT) {
-      return true;
-    }
+    return bytes <= PNG_WEBP_LIMIT;
   } else if (mimetype === "image/jpeg") {
-    if (bytes <= JPG_LIMIT) {
-      return true;
-    }
+    return bytes <= JPG_LIMIT;
   } else if (mimetype === "image/tiff") {
-    if (bytes <= TIFF_LIMIT) {
-      return true;
-    }
+    return bytes <= TIFF_LIMIT;
   }
   return false;
+}
+
+const errorString = (type: AcceptedFileTypes): string => {
+  switch (type) {
+    case "image/jpeg":
+      return `File Exceeds Max Size For a ${type} Image of ${JPG_LIMIT}`;
+    case "image/png":
+    case "image/webp":
+      return `File Exceeds Max Size For a ${type} Image of ${PNG_WEBP_LIMIT}`;
+    case "image/tiff":
+      return `File Exceeds Max Size For a ${type} Image of ${TIFF_LIMIT}`;
+  }
 }
 
 interface CreateMapModalProps {
@@ -78,8 +84,13 @@ function CreateMapModal(props: CreateMapModalProps) {
       const newFiles = Array.from(droppedFiles);
       const filteredFiles = newFiles.filter(file => acceptedImageFileTypes.includes(file.type));
       const filteredFile = filteredFiles[0];
-      if (!fileSizeLimitCheck(filteredFile.size, filteredFile.type as AcceptedFileTypes)) {
-        
+      const fileType = filteredFile.type as AcceptedFileTypes;
+      if (!fileSizeLimitCheck(filteredFile.size, fileType)) {
+        const error = errorString(fileType);
+        setFileSizeWarning(error);
+        setTimeout(() => {
+          setFileSizeWarning(null);
+        }, 2000);
       }
       addImage(filteredFile);
     }
