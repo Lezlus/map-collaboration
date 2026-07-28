@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Navbar } from "./components/Navbar";
 import "./globals.css";
-
+import MapJob from "./components/MapJob";
+import { MapJobProvider } from "./context/MapJobContext";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -27,7 +29,13 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body>
+        <MapJobProvider>
+          <Navbar />
+          {children}
+          <MapJob />
+        </MapJobProvider>
+      </body>
     </html>
   );
 }

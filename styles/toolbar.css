@@ -1,0 +1,43 @@
+/* Textbox */
+
+.textbox-container {
+  box-sizing: border-box;
+  padding: 10px;
+}
+
+.textbox-input {
+  text-align: center;
+  color: white !important;
+  border: 1px solid #a5b4fc; /* Uses an ultra-light gray/off-white */
+  background-color: transparent;
+  width: 100%;
+  font-weight: bold;
+  padding: 6px;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  pointer-events: none;
+  color: #1b1b1f;
+  border-radius: 8px; /* Smooth, modern rounded corners */
+  outline: none;
+  transition: box-shadow 0.1s ease, border-color 0.1s ease;
+}
+
+.textbox-input:hover {
+  background-color: transparent;
+}
+
+.textbox-input:focus {
+  border-color: #a5b4fc;
+  box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.5);
+  background-color: transparent;
+}
+
+/* 1. Hide the blue outline entirely */
+.moveable-control-box .moveable-line {
+  display: none !important; /* Or change to your own color: background: #6366f1 !important; */
+}
+
+/* 2. Hide the default red origin dot in the middle */
+.moveable-control-box .moveable-origin {
+  display: none !important;
+}
