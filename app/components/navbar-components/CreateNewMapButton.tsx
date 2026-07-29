@@ -7,11 +7,13 @@ import { uploadMap } from "@/app/actions/upload-map";
 import { useJobs } from "@/app/context/MapJobContext";
 import { stringifiedBytes } from "@/utils";
 import { fromArrayBuffer } from "geotiff";
+import { userMapNameExists } from "@/app/actions/map-actions";
+import { authClient } from "@/app/lib/auth-client";
 
 const MB_SIZE_BYTES = 1048576
 const GB_SIZE_BYTES = 1073741824
 const PNG_WEBP_LIMIT = 50 * MB_SIZE_BYTES;
-const JPG_LIMIT = 25 * MB_SIZE_BYTES;
+const JPG_LIMIT = 2 * MB_SIZE_BYTES;
 const TIFF_LIMIT = 500 * MB_SIZE_BYTES;
 
 interface ImageFiles {
@@ -22,6 +24,12 @@ interface ImageFiles {
   size: number;
   type: AcceptedFileTypes;
 }
+
+interface Warning {
+  type: "FILESIZE" | "MAPNAME";
+  message: string;
+}
+
 const acceptedImageFileTypes = ["image/png", "image/webp", "image/jpeg", "image/tiff"];
 type AcceptedFileTypes = "image/png" | "image/webp" | "image/jpeg" | "image/tiff";
 
@@ -53,14 +61,21 @@ interface CreateMapModalProps {
 }
 
 function CreateMapModal(props: CreateMapModalProps) {
-
   const { handleCloseModal } = props;
 
   const [imageFile, setImageFile] = useState<ImageFiles>();
   const [mapName, setMapName] = useState("");
-  const [fileSizeWarning, setFileSizeWarning] = useState<string | null>(null);
+  const [mapNameWarning, setMapNameWarning] = useState<Warning | undefined>();
+  const [fileSizeWarning, setFileSizeWarning] = useState<Warning | undefined>();
+
   const [mapDescription, setMapDescription] = useState<string>("");
   const { setActiveJob } = useJobs();
+
+  const { data: session } = authClient.useSession();
+  if (!session) {
+    return <div></div>;
+  }
+
 
   const addImage = async (file: File, fileType: AcceptedFileTypes) => {
     if (fileType === "image/tiff") {
@@ -104,8 +119,14 @@ function CreateMapModal(props: CreateMapModalProps) {
       const fileType = filteredFile.type as AcceptedFileTypes;
       if (!fileSizeLimitCheck(filteredFile.size, fileType)) {
         const error = errorString(fileType);
-        setFileSizeWarning(error);
+        setFileSizeWarning({
+          type: "FILESIZE",
+          message: error
+        });
       } else {
+        if (fileSizeWarning) {
+          setFileSizeWarning(undefined);
+        }
         addImage(filteredFile, fileType);
       }
     }
@@ -121,10 +142,13 @@ function CreateMapModal(props: CreateMapModalProps) {
       const fileType = file.type as AcceptedFileTypes;
       if (!fileSizeLimitCheck(file.size, fileType)) {
         const error = errorString(fileType);
-        setFileSizeWarning(error);
+        setFileSizeWarning({
+          type: "FILESIZE",
+          message: error,
+        });
       } else {
         if (fileSizeWarning) {
-          setFileSizeWarning(null);
+          setFileSizeWarning(undefined);
         }
         addImage(file, fileType);
       }
@@ -133,23 +157,34 @@ function CreateMapModal(props: CreateMapModalProps) {
 
   const handleCreateMapClick = async () => {
     if (mapName && imageFile) {
-      const map_job_id = uuidv4();
-      const validDescription = mapDescription.trim().replaceAll(" ", "").length > 4;
-      const response = await uploadMap({
-        mapJobId: map_job_id,
-        mapName,
-        image: imageFile.file,
-        imageHeight: imageFile.height,
-        imageSize: imageFile.size,
-        imageWidth: imageFile.width,
-        description: validDescription ? mapDescription : null,
-      });
-      if (response.success && response.map_job) {
-        setActiveJob({ mapName, jobId: map_job_id })
-        setTimeout(() => {
-          handleCloseModal();
-        }, 1500);
+      const userMapNameTaken = await userMapNameExists(mapName, session.user.id);
+      if (userMapNameTaken.exists) {
+        setMapNameWarning({
+          type: "MAPNAME",
+          message: `Map name '${mapName}' taken. Choose a different name`
+        });
+        return;
       }
+      if (mapNameWarning) {
+        setMapNameWarning(undefined);
+      }
+      // const map_job_id = uuidv4();
+      // const validDescription = mapDescription.trim().replaceAll(" ", "").length > 4;
+      // const response = await uploadMap({
+      //   mapJobId: map_job_id,
+      //   mapName,
+      //   image: imageFile.file,
+      //   imageHeight: imageFile.height,
+      //   imageSize: imageFile.size,
+      //   imageWidth: imageFile.width,
+      //   description: validDescription ? mapDescription : null,
+      // });
+      // if (response.success && response.map_job) {
+      //   setActiveJob({ mapName, jobId: map_job_id })
+      //   setTimeout(() => {
+      //     handleCloseModal();
+      //   }, 1500);
+      // }
     }
   }
 
@@ -189,6 +224,9 @@ function CreateMapModal(props: CreateMapModalProps) {
             placeholder="e.g. World Fantasy Map"
             className="w-full rounded-lg border border-neutral-800 bg-neutral-950/60 px-3.5 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-[#e5484d] focus:outline-none focus:ring-1 focus:ring-[#e5484d] transition-all"
           />
+          <div className="error-message-wrapper">
+            { mapNameWarning && <p className="text-red-600">{mapNameWarning.message}</p> }
+          </div>
         </div>
 
         {/* Drag & Drop Area */}
@@ -220,7 +258,7 @@ function CreateMapModal(props: CreateMapModalProps) {
         </div>
         {/* Error Message */}
         <div className="error-message-wrapper">
-          <p className="text-red-600">{fileSizeWarning}</p>
+          { fileSizeWarning && <p className="text-red-600">{fileSizeWarning.message}</p> }
         </div>
         {/* Image Preview & Details */}
         {imageFile && (
@@ -248,6 +286,9 @@ function CreateMapModal(props: CreateMapModalProps) {
                 </span>
                 <span className="bg-neutral-800/80 px-2 py-0.5 rounded border border-neutral-700/50">
                   {stringifiedBytes(imageFile.size)}
+                </span>
+                <span className="bg-neutral-800/80 px-2 py-0.5 rounded border border-neutral-700/50">
+                  {imageFile.type}
                 </span>
               </div>
             </div>
@@ -281,8 +322,8 @@ function CreateMapModal(props: CreateMapModalProps) {
           <button 
             type="button"
             onClick={handleCreateMapClick} 
-            disabled={!imageFile || !mapName} 
-            className="flex-1 rounded-lg bg-[#e5484d] py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#e5484d]/20 hover:bg-[#d03e43] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#e5484d] transition-all"
+            disabled={!imageFile || !mapName || (fileSizeWarning !== undefined)} 
+            className="flex-1 rounded-lg bg-[#e5484d] py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#e5484d]/20 hover:bg-[#d03e43] disabled:opacity-50 disabled:cursor-default disabled:hover:bg-[#e5484d] transition-all"
           >
             Create Map
           </button>
