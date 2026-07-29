@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { uploadMap } from "@/app/actions/upload-map";
 import { useJobs } from "@/app/context/MapJobContext";
 import { stringifiedBytes } from "@/utils";
+import { fromArrayBuffer } from "geotiff";
 
 const MB_SIZE_BYTES = 1048576
 const GB_SIZE_BYTES = 1073741824
@@ -15,10 +16,11 @@ const TIFF_LIMIT = 500 * MB_SIZE_BYTES;
 
 interface ImageFiles {
   file: File;
-  url: string;
+  url?: string;
   width: number;
   height: number;
   size: number;
+  type: AcceptedFileTypes;
 }
 const acceptedImageFileTypes = ["image/png", "image/webp", "image/jpeg", "image/tiff"];
 type AcceptedFileTypes = "image/png" | "image/webp" | "image/jpeg" | "image/tiff";
@@ -37,12 +39,12 @@ const fileSizeLimitCheck = (bytes: number, mimetype: AcceptedFileTypes): boolean
 const errorString = (type: AcceptedFileTypes): string => {
   switch (type) {
     case "image/jpeg":
-      return `File Exceeds Max Size For a ${type} Image of ${JPG_LIMIT}`;
+      return `Exceeds Max JPG Size of ${stringifiedBytes(JPG_LIMIT)}`;
     case "image/png":
     case "image/webp":
-      return `File Exceeds Max Size For a ${type} Image of ${PNG_WEBP_LIMIT}`;
+      return `Exceeds Max PNG/WebP Size of ${stringifiedBytes(PNG_WEBP_LIMIT)}`;
     case "image/tiff":
-      return `File Exceeds Max Size For a ${type} Image of ${TIFF_LIMIT}`;
+      return `Exceeds Max TIFF Size of ${stringifiedBytes(TIFF_LIMIT)}`;
   }
 }
 
@@ -60,22 +62,36 @@ function CreateMapModal(props: CreateMapModalProps) {
   const [mapDescription, setMapDescription] = useState<string>("");
   const { setActiveJob } = useJobs();
 
-  const addImage = (file: File) => {
-    const objectURL = URL.createObjectURL(file);
-    const image = new Image();
-    image.src = objectURL;
-    image.onload = (() => {
-      const height = image.height;
-      const width = image.width;
-      const size = file.size;
+  const addImage = async (file: File, fileType: AcceptedFileTypes) => {
+    if (fileType === "image/tiff") {
+      const buffer = await file.arrayBuffer();
+      const tiff = await fromArrayBuffer(buffer);
+      const image = await tiff.getImage();
       setImageFile({
         file,
-        url: objectURL,
-        height,
-        width,
-        size,
+        height: image.getHeight(),
+        width: image.getWidth(),
+        size: file.size,
+        type: fileType,
       })
-    })
+    } else {
+      const objectURL = URL.createObjectURL(file);
+      const image = new Image();
+      image.src = objectURL;
+      image.onload = (() => {
+        const height = image.height;
+        const width = image.width;
+        const size = file.size;
+        setImageFile({
+          file,
+          url: objectURL,
+          height,
+          width,
+          size,
+          type: fileType,
+        })
+      })
+    }
   }
   const handleImageDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -84,27 +100,34 @@ function CreateMapModal(props: CreateMapModalProps) {
       const newFiles = Array.from(droppedFiles);
       const filteredFiles = newFiles.filter(file => acceptedImageFileTypes.includes(file.type));
       const filteredFile = filteredFiles[0];
+    
       const fileType = filteredFile.type as AcceptedFileTypes;
       if (!fileSizeLimitCheck(filteredFile.size, fileType)) {
         const error = errorString(fileType);
         setFileSizeWarning(error);
-        setTimeout(() => {
-          setFileSizeWarning(null);
-        }, 2000);
+      } else {
+        addImage(filteredFile, fileType);
       }
-      addImage(filteredFile);
     }
   }
 
-    const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = e.target.files;
     if (selectedFiles && selectedFiles.length > 0) {
       const file = Array.from(selectedFiles)[0];
-      console.log(file.type);
       if (!acceptedImageFileTypes.includes(file.type)) {
         return;
       }
-      addImage(file);
+      const fileType = file.type as AcceptedFileTypes;
+      if (!fileSizeLimitCheck(file.size, fileType)) {
+        const error = errorString(fileType);
+        setFileSizeWarning(error);
+      } else {
+        if (fileSizeWarning) {
+          setFileSizeWarning(null);
+        }
+        addImage(file, fileType);
+      }
     }
   }
 
@@ -183,7 +206,7 @@ function CreateMapModal(props: CreateMapModalProps) {
               Drop your image here or <label htmlFor="browse" className="text-[#e5484d] hover:underline cursor-pointer font-semibold">Browse</label>
             </div>
             <p className="mt-1 text-[11px] text-neutral-500">
-              Supports PNG, JPG, WebP up to 10MB
+              Supports PNG, JPG, WebP, TIFF, and GEOTIFF
             </p>
             <input 
               type="file" 
@@ -195,17 +218,22 @@ function CreateMapModal(props: CreateMapModalProps) {
             />
           </div>
         </div>
-
+        {/* Error Message */}
+        <div className="error-message-wrapper">
+          <p className="text-red-600">{fileSizeWarning}</p>
+        </div>
         {/* Image Preview & Details */}
         {imageFile && (
           <div className="rounded-xl border border-neutral-800 bg-neutral-950/60 p-3 flex gap-3.5 items-center">
             <div className="relative aspect-square w-16 shrink-0 overflow-hidden rounded-lg bg-neutral-900 border border-neutral-800">
-              <NextImage 
-                fill 
-                src={imageFile.url} 
-                alt={imageFile.file.name} 
-                className="object-cover"
-              />
+              { imageFile.type !== "image/tiff" && (
+                <NextImage 
+                  fill 
+                  src={imageFile.url ?? ""} 
+                  alt={imageFile.file.name} 
+                  className="object-cover"
+                />
+              )}
             </div>
             
             <div className="flex-1 min-w-0 space-y-1">
