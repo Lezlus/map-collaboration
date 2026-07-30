@@ -77,6 +77,20 @@ export interface MapInstance {
   user: UserMapJoinTable | null
 }
 
+export interface MapInstanceCreate {
+  id: string;
+  user_id: string;
+  map_id: string;
+  name: string;
+}
+
+export interface MapInstanceUpdate {
+  id: string;
+  user_id: string;
+  name?: string;
+  visible?: boolean
+}
+
 export type MapUploadType = z.infer<typeof uploadMapValidationSchema>;
 
 export interface Response {
