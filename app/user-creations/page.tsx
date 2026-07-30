@@ -49,6 +49,7 @@ export default async function UserCreations({ params }: { params: Promise<{id: s
           instanceName: mapInstance.name ?? "Unamed Map",
           id: mapInstance.id,
           updatedAt: mapInstance.updatedAt,
+          visible: mapInstance.visible,
           authorId: mapInstance.user?.id ?? "",
           authorName: (mapInstance.user?.username ?? mapInstance.user?.name) ?? "No Name"
         })

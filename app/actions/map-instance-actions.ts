@@ -89,6 +89,7 @@ export async function createMapInstance(mapId: string, mapName: string): Promise
     }
   } finally {
     revalidatePath("/your-creations");
+    revalidatePath("/");
     return response;
   }
 }
@@ -133,6 +134,7 @@ export async function updateMapInstance(updateData: MapInstanceUpdate): Promise<
     }
   } finally {
     revalidatePath("/your-creations");
+    revalidatePath("/");
     return response;
   }
 }
@@ -159,6 +161,7 @@ export async function deleteMapInstance(id: string): Promise<Response> {
     }
   } finally {
     revalidatePath("/your-creations");
+    revalidatePath("/");
     return response;
   }
 }

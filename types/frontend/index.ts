@@ -101,4 +101,5 @@ export interface MapInstanceItem {
   updatedAt: string;
   authorId: string;
   authorName: string;
+  visible: boolean;
 }

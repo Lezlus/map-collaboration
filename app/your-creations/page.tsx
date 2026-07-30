@@ -50,6 +50,7 @@ export default async function YourCreationsPage() {
       mapInstanceItems.push({
         instanceName: mapInstance.name ?? "Unamed Map",
         id: mapInstance.id,
+        visible: mapInstance.visible,
         updatedAt: mapInstance.updatedAt,
         authorId: mapInstance.user?.id ?? "",
         authorName: (mapInstance.user?.username ?? mapInstance.user?.name) ?? "No Name"
