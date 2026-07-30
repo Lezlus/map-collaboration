@@ -9,6 +9,7 @@ import { stringifiedBytes } from "@/utils";
 import { fromArrayBuffer } from "geotiff";
 import { userMapNameExists } from "@/app/actions/map-actions";
 import { authClient } from "@/app/lib/auth-client";
+import Modal from "../Modal";
 
 const MB_SIZE_BYTES = 1048576
 const GB_SIZE_BYTES = 1073741824
@@ -189,29 +190,10 @@ function CreateMapModal(props: CreateMapModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity" 
-        onClick={handleCloseModal}
-      />
-
+    <>
       {/* Modal Dialog */}
       <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-neutral-900 border border-neutral-800 p-6 shadow-2xl transition-all space-y-5">
         
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
-          <h3 className="text-xl font-bold text-white tracking-tight">
-            Create Map
-          </h3>
-          <button 
-            onClick={handleCloseModal}
-            className="text-neutral-400 hover:text-white transition-colors text-sm"
-          >
-            ✕
-          </button>
-        </div>
-
         {/* Map Name Input */}
         <div>
           <label className="block text-xs font-semibold text-neutral-300 uppercase tracking-wider mb-1.5">
@@ -330,7 +312,7 @@ function CreateMapModal(props: CreateMapModalProps) {
         </div>
 
       </div>
-    </div>
+    </>
   )
 }
 
@@ -340,7 +322,12 @@ export default function CreateNewMapButton() {
   return (
     <div className="new-map-button">
       <button onClick={() => setModalOpen(prev => !prev)}>New Map <FaPlus scale={1} size={2} /></button>
-      {modalOpen && <CreateMapModal handleCloseModal={() => setModalOpen(false)} />}
+      <Modal 
+        isOpen={modalOpen}
+        handleCloseModal={() => setModalOpen(false)} 
+        title="Create">
+        <CreateMapModal handleCloseModal={() => setModalOpen(false)} />
+      </Modal>
     </div>
   )
 }

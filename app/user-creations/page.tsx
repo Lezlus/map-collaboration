@@ -20,24 +20,24 @@ export default async function UserCreations({ params }: { params: Promise<{id: s
   }
 
   const publishedMaps = await getUserPublishedMaps(id);
-  const publishedMapItems: MapItem[] = [];
+  let publishedMapItems: MapItem[] = [];
   if (publishedMaps.maps) {
-    for (const map of publishedMaps.maps) {
-      const url = `https://${process.env.CDN}/${map.manifest_path}`;
-      const data =  await fetch(url);
-      const manifest = await data.json() as ManifestFileUpload;
-      const mapImage = `https://${process.env.CDN}/${manifest.userDirectoryKey}/${manifest.mapJobDirectoryKey}/${manifest.mapImageKey}`;
-      publishedMapItems.push({
-        mapName: manifest.mapName,
-        imageUrl: mapImage,
-        id: map.id,
-        description: map.description,
-        createdAt: map.createdAt,
-        authorId: map.user?.id ?? "",
-        authorName: (map.user?.username ?? map.user?.name) ?? "No Name",
-      });
+      publishedMapItems = await Promise.all<Promise<MapItem>>(publishedMaps.maps.map(async (map) => {
+        const url = `https://${process.env.CDN}/${map.manifest_path}`;
+        const data =  await fetch(url);
+        const manifest = await data.json() as ManifestFileUpload;
+        const mapImage = `https://${process.env.CDN}/${manifest.userDirectoryKey}/${manifest.mapJobDirectoryKey}/${manifest.mapImageKey}`;
+        return {
+          mapName: manifest.mapName,
+          imageUrl: mapImage,
+          id: map.id,
+          description: map.description,
+          createdAt: map.createdAt,
+          authorId: map.user?.id ?? "",
+          authorName: (map.user?.username ?? map.user?.name) ?? "No Name",
+        }
+      }))
     }
-  }
 
   const mapInstances = await getUserMapInstances(id);
   const mapInstanceItems: MapInstanceItem[] = [];

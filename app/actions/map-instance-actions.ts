@@ -6,6 +6,7 @@ import { Response, MapInstance, MapInstanceCreate, MapInstanceUpdate } from "@/t
 import { headers } from "next/headers";
 import { v4 as uuidv4 } from 'uuid';
 import { QueryData } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 
 interface CreateUpdateMapInstanceInsertResponse extends Response {
   data?: MapInstance;
@@ -87,6 +88,7 @@ export async function createMapInstance(mapId: string, mapName: string): Promise
       response = { ...response, message: error.message };
     }
   } finally {
+    revalidatePath("/your-creations");
     return response;
   }
 }
@@ -130,6 +132,7 @@ export async function updateMapInstance(updateData: MapInstanceUpdate): Promise<
       response = { ...response, message: error.message };
     }
   } finally {
+    revalidatePath("/your-creations");
     return response;
   }
 }
@@ -155,6 +158,7 @@ export async function deleteMapInstance(id: string): Promise<Response> {
       response = { ...response, message: err.message };
     }
   } finally {
+    revalidatePath("/your-creations");
     return response;
   }
 }
