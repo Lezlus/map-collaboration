@@ -146,6 +146,7 @@ export type Database = {
           manifest_path: string
           name: string | null
           official: boolean | null
+          seach_vector: unknown
           updatedAt: string
           user_id: string | null
         }
@@ -157,6 +158,7 @@ export type Database = {
           manifest_path: string
           name?: string | null
           official?: boolean | null
+          seach_vector?: unknown
           updatedAt?: string
           user_id?: string | null
         }
@@ -168,6 +170,7 @@ export type Database = {
           manifest_path?: string
           name?: string | null
           official?: boolean | null
+          seach_vector?: unknown
           updatedAt?: string
           user_id?: string | null
         }
@@ -187,6 +190,7 @@ export type Database = {
           id: string
           map_id: string | null
           name: string | null
+          search_vt_map_instance: unknown
           updatedAt: string
           user_id: string | null
           visible: boolean
@@ -196,6 +200,7 @@ export type Database = {
           id: string
           map_id?: string | null
           name?: string | null
+          search_vt_map_instance?: unknown
           updatedAt?: string
           user_id?: string | null
           visible?: boolean
@@ -205,6 +210,7 @@ export type Database = {
           id?: string
           map_id?: string | null
           name?: string | null
+          search_vt_map_instance?: unknown
           updatedAt?: string
           user_id?: string | null
           visible?: boolean
@@ -362,15 +368,51 @@ export type Database = {
         }
         Relationships: []
       }
+      words_map: {
+        Row: {
+          word: string | null
+        }
+        Insert: {
+          word?: string | null
+        }
+        Update: {
+          word?: string | null
+        }
+        Relationships: []
+      }
+      words_map_instance: {
+        Row: {
+          word: string | null
+        }
+        Insert: {
+          word?: string | null
+        }
+        Update: {
+          word?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      correct_search_query: { Args: { user_input: string }; Returns: string }
+      search_query: {
+        Args: { q: string }
+        Returns: {
+          id: string
+          name: string
+          rank: number
+          type: Database["public"]["Enums"]["search_result_enum"]
+        }[]
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       map_job_status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED"
+      search_result_enum: "map" | "map_instance"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -502,6 +544,7 @@ export const Constants = {
   public: {
     Enums: {
       map_job_status: ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
+      search_result_enum: ["map", "map_instance"],
     },
   },
 } as const
