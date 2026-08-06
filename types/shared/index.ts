@@ -1,4 +1,5 @@
 import { email, int, number, z } from 'zod';
+import { FeatureAction, MapAction } from '../frontend';
 
 export const blipFeatureFormValidationSchema = z.object({
   title: z.string().max(100),
@@ -91,6 +92,13 @@ export interface MapInstanceUpdate {
   visible?: boolean
 }
 
+export interface MapUpdate {
+  id: string;
+  user_id: string;
+  name?: string;
+  description?: string;
+}
+
 export type MapUploadType = z.infer<typeof uploadMapValidationSchema>;
 
 export interface Response {
@@ -112,8 +120,20 @@ export interface ManifestFileUpload {
   bucketName: string;
   mapImageKey: string;
   mapDimensionsX: string;
-  mapDimensionsY: string,
-  mapSize: string,
+  mapDimensionsY: string;
+  mapSize: string;
+}
+
+export interface ManifestFile extends ManifestFileUpload {
+  mapDirectoryKey: string;
+}
+
+export interface FeatureCreate {
+  id: string;
+  user_id: string;
+  map_instance_id: string;
+  value: string;
+  action: FeatureAction;
 }
 
 export interface SQSMessageBody {

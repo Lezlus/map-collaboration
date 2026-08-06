@@ -1,10 +1,17 @@
 "use server";
 
 import { supabaseClient } from "@/utils/supabase/client";
-import { Response } from "@/types";
+import { Response, MapUpdate, PublishedMap } from "@/types";
+import { auth } from "../lib/auth";
+import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 interface UserMapExistsResponse extends Response {
   exists: boolean;
+}
+
+interface MapUpdateResponse extends Response {
+  data?: PublishedMap
 }
 
 /**
@@ -27,4 +34,32 @@ export async function userMapNameExists(mapName: string, userId: string): Promis
     return { message: `Map With Name: ${mapName} doesn't exist`, success: true, exists: false };
   }
   return { message: `Map With Name: ${mapName} exists`, success: true, exists: true };
+}
+
+export async function updateMap(updateData: MapUpdate): Promise<Response> {
+  let response: Response = { success: false };
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (!session?.user) {
+      throw new Error("User Not Logged In or Invalid User");
+    }
+    const updateResponse = await supabaseClient.from("map")
+      .update({ name: updateData.name, description: updateData.description })
+      .eq("id", updateData.id)
+    if (updateResponse.error) {
+      throw new Error(updateResponse.error.message);
+    }
+    revalidatePath("/your-creations");
+    revalidatePath("/");
+    response = { success: true };
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log(error.message);
+      response = { ...response, message: error.message };
+    }
+  } finally {
+    return response; 
+  }
 }

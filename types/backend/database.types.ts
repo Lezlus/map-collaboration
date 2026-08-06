@@ -97,6 +97,7 @@ export type Database = {
       }
       feature: {
         Row: {
+          action: Database["public"]["Enums"]["featureaction"]
           createdAt: string
           id: string
           map_instance_id: string | null
@@ -105,6 +106,7 @@ export type Database = {
           value: string | null
         }
         Insert: {
+          action: Database["public"]["Enums"]["featureaction"]
           createdAt?: string
           id: string
           map_instance_id?: string | null
@@ -113,6 +115,7 @@ export type Database = {
           value?: string | null
         }
         Update: {
+          action?: Database["public"]["Enums"]["featureaction"]
           createdAt?: string
           id?: string
           map_instance_id?: string | null
@@ -411,6 +414,12 @@ export type Database = {
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
+      featureaction:
+        | "ERASE"
+        | "DRAW"
+        | "TEXT"
+        | "IMAGE PLACEMENT"
+        | "BLIP PLACEMENT"
       map_job_status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED"
       search_result_enum: "map" | "map_instance"
     }
@@ -543,6 +552,13 @@ export const Constants = {
   },
   public: {
     Enums: {
+      featureaction: [
+        "ERASE",
+        "DRAW",
+        "TEXT",
+        "IMAGE PLACEMENT",
+        "BLIP PLACEMENT",
+      ],
       map_job_status: ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
       search_result_enum: ["map", "map_instance"],
     },

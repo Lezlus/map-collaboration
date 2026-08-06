@@ -7,6 +7,7 @@ import Modal from "./Modal";
 import { MouseEvent, useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { updateMapInstance } from "../actions/map-instance-actions";
+import { authClient } from "../lib/auth-client";
 
 interface MapInstanceProps {
   mapInstanceItem: MapInstanceItem
@@ -39,6 +40,7 @@ const MapInstanceEditModal = (props: MapInstanceEditModal) => {
       handleModalClose();
     } else { 
       // Display some error
+      console.log(res.message);
       setError("Error Submitting Data");
     }
   }
@@ -115,6 +117,8 @@ const MapInstanceEditModal = (props: MapInstanceEditModal) => {
 export default function MapInstance(props: MapInstanceProps) {
   const { mapInstanceItem } = props;
   const [modalOpen, setModalOpen] = useState(false);
+  const session = authClient.useSession();
+
 
   return (
     <div
@@ -137,16 +141,20 @@ export default function MapInstance(props: MapInstanceProps) {
         </div>
       </div>
       {/* 3 dots Icon */}
-      <div className="edit-icon-wrapper" onClick={(e) => { e.stopPropagation();setModalOpen(true) }}>
-        <BsThreeDots />
-      </div>
-      <Modal
-        title="Edit"
-        handleCloseModal={() => setModalOpen(false)}
-        isOpen={modalOpen}
-      >
-        <MapInstanceEditModal mapInstanceItem={mapInstanceItem} handleModalClose={() => setModalOpen(false)} />
-      </Modal>
+      {(session.data?.user.id === mapInstanceItem.authorId) && (
+        <>
+          <div className="edit-icon-wrapper" onClick={(e) => { e.stopPropagation();setModalOpen(true) }}>
+            <BsThreeDots />
+          </div>
+          <Modal
+            title="Edit"
+            handleCloseModal={() => setModalOpen(false)}
+            isOpen={modalOpen}
+          >
+            <MapInstanceEditModal mapInstanceItem={mapInstanceItem} handleModalClose={() => setModalOpen(false)} />
+          </Modal>
+        </>
+      )}
     </div>
   )
 }

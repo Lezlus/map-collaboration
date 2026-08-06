@@ -7,6 +7,7 @@ export type MapActionState = "ERASE" | "MOVE" | "SELECT" | "DRAW" | "TEXT" | "IM
 type UsersConnection = "USERS CONNECTED" | "USER DISCONNECTED" | "USER CONNECT"
 type ActionType = "MAP ACTION" | "USER CONNECTION"
 export type MapAction = UsersConnection | Exclude<MapActionState, "SELECT" | "MOVE">;
+export type FeatureAction = Exclude<MapActionState, "SELECT" | "MOVE">;
 
 export interface WebSocketMapAction {
   type: ActionType;

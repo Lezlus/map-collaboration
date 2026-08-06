@@ -3,6 +3,7 @@ export type {
   TextBoxInfo, 
   Coordinate, 
   MapAction, 
+  FeatureAction,
   MapFeatureType,
   WebSocketMapAction, 
   WebSocketUsersConnected, 
@@ -14,4 +15,4 @@ export type {
 } from "./frontend";
 export { USER_ID_LOCALSTORAGE_NAME, USERNAME_LOCALSTORAGE_NAME } from './frontend';
 export type { MapItem, MapInstanceItem } from "./frontend";
-export type { Response, MapUploadType, MapUploadActionResponse, ManifestFileUpload, SQSMessageBody, JobStatus, PublishedMap, MapInstance, MapInstanceCreate, MapInstanceUpdate } from "./shared";
+export type { Response, FeatureCreate, MapUploadType, MapUploadActionResponse, ManifestFileUpload, SQSMessageBody, JobStatus, PublishedMap, MapInstance, MapInstanceCreate, MapInstanceUpdate, MapUpdate, ManifestFile } from "./shared";

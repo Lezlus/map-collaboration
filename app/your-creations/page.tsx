@@ -9,6 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { dateFormatter } from "@/utils";
 import PublishedMap from "../components/PublishedMap";
+import MapInstance from "../components/MapInstance";
 
 export default async function YourCreationsPage() {
 
@@ -94,26 +95,7 @@ export default async function YourCreationsPage() {
         <section>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {mapInstanceItems.map((mapItem) => (
-              <div
-                key={mapItem.id}
-                className="cursor-pointer bg-neutral-900/50 border border-neutral-800/80 hover:border-neutral-700 rounded-lg p-4 transition-all duration-150 flex items-center justify-between"
-              >
-                <div className="flex items-center space-x-3 truncate">
-                  {/* Status Indicator Dot */}
-                  <div className="truncate">
-                    <h3 className="text-sm font-medium text-neutral-200 truncate">
-                      {mapItem.instanceName}
-                    </h3>
-                    <p className="text-xs text-neutral-500 mt-0.5">
-                      Updated {dateFormatter(mapItem.updatedAt)}
-                    </p>
-                    <p className="text-xs text-neutral-500 mt-0.5">
-                      {/* Include a link to  */}
-                      Original Creator: <Link href={`/user-creations/${mapItem.authorId}`}><span className="text-[#e5484d] cursor-pointer">{mapItem.authorName}</span></Link>
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <MapInstance key={mapItem.id} mapInstanceItem={mapItem} />
             ))}
           </div>
         </section>

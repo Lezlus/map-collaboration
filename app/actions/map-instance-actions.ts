@@ -7,6 +7,12 @@ import { headers } from "next/headers";
 import { v4 as uuidv4 } from 'uuid';
 import { QueryData } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { getMapInstnaceQuery } from "@/utils";
+
+type MapInstancePopulatedArray = QueryData<
+  ReturnType<typeof getMapInstnaceQuery>
+>;
+export type MapInstancePopulated = MapInstancePopulatedArray[number];
 
 interface CreateUpdateMapInstanceInsertResponse extends Response {
   data?: MapInstance;
@@ -15,6 +21,34 @@ interface CreateUpdateMapInstanceInsertResponse extends Response {
 interface UpdatedMapJobInstanceFields {
   name?: string;
   visible?: boolean;
+}
+
+interface GetMapInstanceResponse extends Response {
+  data?: MapInstancePopulated;
+}
+
+export async function getMapInstance(mapInstanceId: string): Promise<GetMapInstanceResponse> {
+  let response: GetMapInstanceResponse = { success: false };
+  try {
+    const getMapResponse = await getMapInstnaceQuery()
+      .eq("id", mapInstanceId)
+      .single();
+    if (getMapResponse.error) {
+      throw new Error(getMapResponse.error.message);
+    }
+
+    if (!getMapResponse.data) {
+      throw new Error("Map Doesn't Exist");
+    }
+
+    response = { ...response, data: getMapResponse.data, success: true };
+  } catch (err) {
+    if (err instanceof Error) {
+      response = { ...response, message: err.message };
+    }
+  } finally {
+    return response;
+  }
 }
 
 export async function createMapInstance(mapId: string, mapName: string): Promise<CreateUpdateMapInstanceInsertResponse> {
@@ -94,8 +128,10 @@ export async function createMapInstance(mapId: string, mapName: string): Promise
   }
 }
 
-export async function updateMapInstance(updateData: MapInstanceUpdate): Promise<CreateUpdateMapInstanceInsertResponse> {
-  let response: CreateUpdateMapInstanceInsertResponse = { success: false };
+export async function updateMapInstance(updateData: MapInstanceUpdate): Promise<Response> {
+  // TODO Assert current user is allowed to update map instnace
+
+  let response: Response = { success: false };
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -107,34 +143,21 @@ export async function updateMapInstance(updateData: MapInstanceUpdate): Promise<
       name: updateData.name,
       visible: updateData.visible,
     };
-    const updateResponse = supabaseClient.from("map_instance")
+
+    const updateResponse = await supabaseClient.from("map_instance")
       .update({ ...updatedFields })
       .eq("id", updateData.id)
-      .eq("user_id", updateData.user_id)
-      .select(`
-        *,
-        user:user_id (
-          name, 
-          username,
-          id
-        )
-      `)
-      .single()
-    
-    type MapInstanceWithUser = QueryData<typeof updateResponse>;
-    const responseQuery = await updateResponse;
-    if (responseQuery.error) {
-      throw new Error(responseQuery.error.message);
+    if (updateResponse.error) {
+      throw new Error(updateResponse.error.message);
     }
-    const data: MapInstanceWithUser = responseQuery.data;
-    response = { success: true, data };
+    revalidatePath("/your-creations");
+    revalidatePath("/");
+    response = { success: true };
   } catch (error) {
     if (error instanceof Error) {
       response = { ...response, message: error.message };
     }
   } finally {
-    revalidatePath("/your-creations");
-    revalidatePath("/");
     return response;
   }
 }

@@ -27,7 +27,7 @@ export async function search(query: string): Promise<SearchResponse> {
       if (searchResponse.error) {
         throw new Error(searchResponse.error.message);
       }
-      searchResponse.data.map(async (row) => {
+      await Promise.all(searchResponse.data.map(async (row) => {
         if (row.type === "map") {
           const mapResponse = await supabaseClient.from("map").select(`
             id,
@@ -73,7 +73,7 @@ export async function search(query: string): Promise<SearchResponse> {
             mapInstances.push(data);
           }
         }
-      })
+      }));
       response = { ...response, success: true };
     }
   } catch (e) {
