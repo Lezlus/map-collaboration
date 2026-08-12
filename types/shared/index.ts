@@ -1,12 +1,26 @@
 import { email, int, number, z } from 'zod';
 import { FeatureAction, MapAction } from '../frontend';
 
+export const SessionUser = z.object({
+  id: z.string(),
+  name: z.string(),
+  username: z.string().nullish()
+});
+
+export type SessionUserType = z.infer<typeof SessionUser>;
+
 export const blipFeatureFormValidationSchema = z.object({
   title: z.string().max(100),
   description: z.string().max(500),
-  imageFiles: z.instanceof(FileList),
-  audioFiles: z.instanceof(FileList),
-  videoFiles: z.instanceof(FileList),
+  imageFiles: z.unknown().transform(value => {
+    return value as FileList;
+  }),
+  audioFiles: z.unknown().transform(value => {
+    return value as FileList;
+  }),
+  videoFiles: z.unknown().transform(value => {
+    return value as FileList;
+  }),
 });
 
 // Account Creation Types
@@ -144,3 +158,9 @@ export interface SQSMessageBody {
 }
 
 export type JobStatus = "PENDING" | "PROCESSING" | "FAILED" | "COMPLETED"
+
+export interface ImageBodyType {
+  type: "IMAGE";
+  contentType: string;
+  file: File;
+};

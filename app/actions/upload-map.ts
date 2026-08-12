@@ -10,18 +10,12 @@ import { auth } from "../lib/auth";
 import { supabaseClient } from "@/utils/supabase/client";
 import { headers } from "next/headers";
 import { SendMessageCommand, SQSServiceException } from "@aws-sdk/client-sqs";
+import { ImageBodyType } from "@/types";
 
 interface JSONBodyType {
   type: "JSON";
   data: string;
 }
-
-interface ImageBodyType {
-  type: "IMAGE";
-  contentType: string;
-  file: File;
-}
-
 type BodyType = JSONBodyType | ImageBodyType;
 
 async function uploadObject(key: string, body: BodyType): Promise<Response> {

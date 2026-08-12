@@ -20,7 +20,6 @@ export default function MapJob() {
   useEffect(() => {
     // if (!activeJob || !token || isLoading) return;
     if (!token || isLoading || !activeJob) return;
-    console.log("Going To Connect To Supabsae Realtime")
     const connect = async () => {
       await supabaseClient.realtime.setAuth(token);
       channelRef.current = supabaseClient

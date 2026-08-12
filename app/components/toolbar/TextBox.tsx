@@ -1,5 +1,5 @@
 "use client";
-import "../../styles/toolbar.css";
+import "../../../styles/toolbar.css";
 import Moveable from "react-moveable";
 import { useRef, useState, useEffect, MouseEvent } from 'react';
 import { TextBoxInfo, Coordinate } from "@/types";

@@ -28,10 +28,10 @@ export default async function YourCreationsPage() {
   let publishedMapItems: MapItem[] = [];
   if (publishedMaps.maps) {
     publishedMapItems = await Promise.all<Promise<MapItem>>(publishedMaps.maps.map(async (map) => {
-      const url = `https://${process.env.CDN}/${map.manifest_path}`;
+      const url = `https://${process.env.NEXT_PUBLIC_CDN}/${map.manifest_path}`;
       const data =  await fetch(url);
       const manifest = await data.json() as ManifestFileUpload;
-      const mapImage = `https://${process.env.CDN}/${manifest.userDirectoryKey}/${manifest.mapJobDirectoryKey}/${manifest.mapImageKey}`;
+      const mapImage = `https://${process.env.NEXT_PUBLIC_CDN}/${manifest.userDirectoryKey}/${manifest.mapJobDirectoryKey}/${manifest.mapImageKey}`;
       return {
         mapName: manifest.mapName,
         imageUrl: mapImage,

@@ -3,10 +3,19 @@ import { motion } from "framer-motion"
 import React, { useState } from "react"
 import Image from "next/image"
 import { FaFileAudio, FaFileVideo } from "react-icons/fa"
+import { generatePreSignedPutObjectUrl } from "../actions";
+import { authClient } from "../lib/auth-client"
+import { BlipFeatureData, ImageBodyType } from "@/types"
+import { cdnStringifier } from "@/utils"
 
 interface ImageFiles {
   file: File;
   url: string;
+}
+
+interface BlipSidebarProps {
+  handleClose: () => void;
+  handleAddBlipFeature: (data: BlipFeatureData) => void;
 }
 
 type AssetType = "AUDIO" | "VIDEO";
@@ -15,10 +24,19 @@ const acceptedImageFileTypes = ["image/png", "image/webp", "image/jpeg"];
 const acceptedAudioFileTypes = ["audio/wav", "audio/mpeg"];
 const acceptedVideoFileTypes = ["video/mp4", "video/quicktime"];
 
-export default function BlipSidebar() {
+export default function BlipSidebar(props: BlipSidebarProps) {
+  const { handleClose, handleAddBlipFeature } = props;
+  const session = authClient.useSession();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [imageFiles, setImageFiles] = useState<ImageFiles[]>([]);
   const [audioFiles, setAudioFiles] = useState<File[]>([]);
   const [videoFiles, setVideoFiles] = useState<File[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  if (!session.data?.user) {
+    return;
+  }
 
   const handleImageDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -82,9 +100,73 @@ export default function BlipSidebar() {
     }
   };
 
+  const handleSubmit = async () => {
+    if (!session.data?.user) return;
+    setLoading(true);
+    const userId = session.data.user.id;
+    const responses = await Promise.all(imageFiles.map(async (image) => {
+      const data: ImageBodyType = {
+        type: "IMAGE",
+        contentType: image.file.type,
+        file: image.file,
+      };
+      return await generatePreSignedPutObjectUrl(userId, data);
+    }));
+    const anyFailed = responses.every(res => res.success === "YES");
+    if (anyFailed) {
+      setErrorMessage("Error Uploading One or Multiple Images, Please Try Again");
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 2000);
+      setImageFiles([]);
+    }
+    const successfulResponses = responses.filter(res => res.success === "YES");
+    console.log(successfulResponses);
+    const successfulUploads: string[] = [];
+    await Promise.all(successfulResponses.map(async (response) => {
+      try {
+        const arrayBuffer = await response.file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const res = await fetch(response.url, { method: "PUT", body: buffer, headers: { "Content-Type": response.file.type } });
+        if (res.ok) {
+          successfulUploads.push(response.s3Key);
+        }
+      } catch (e) {
+        if (e instanceof Error) {
+          console.log(e);
+          handleClose();
+          return;
+        }
+      }
+    }));
+    console.log(successfulUploads);
+    const successfulUploadCount = successfulResponses.length - successfulUploads.length;
+    console.log(successfulUploadCount);
+    if (successfulUploadCount  !== 0) {
+      setErrorMessage("One or more images have failed to upload");
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 2000);
+    }
+    // No Uploads were successful
+    if (successfulUploadCount === successfulResponses.length) {
+      handleClose();
+      return;
+    }
 
-
-
+    const imageUrls = successfulUploads.map(s3Key => {
+      return cdnStringifier(s3Key);
+    });
+    const blipFeatureData: BlipFeatureData = {
+      images: imageUrls,
+      title,
+      description,
+    };
+    console.log(blipFeatureData);
+    handleAddBlipFeature(blipFeatureData);
+    setLoading(false);
+    handleClose();
+  }
 
   return (
     <>
@@ -106,6 +188,8 @@ export default function BlipSidebar() {
             </label>
             <input
               type="text"
+              onChange={(e) => setTitle(e.target.value)}
+              value={title}
               placeholder="e.g., Scenic Waterfall Overlook"
               className="w-full rounded-lg border border-slate-800 bg-slate-900/60"
             />
@@ -116,6 +200,8 @@ export default function BlipSidebar() {
             </label>
             <textarea 
               rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the trail conditions, wildlife sightings, or special memories here..." 
               className="w-full resize-none rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-sm text-slate-200 placeholder-slate-500 outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/80"
             />
@@ -238,13 +324,15 @@ export default function BlipSidebar() {
 
         {/* Action Buttons Footer (Sticky at bottom) */}
         <div className="mt-auto border-t border-slate-800/80 pt-4 flex gap-3">
-          <button className="flex-1 rounded-lg border border-slate-800 bg-transparent py-2 text-sm font-medium text-slate-400 hover:bg-slate-900 hover:text-slate-200 transition-colors">
+          <button onClick={() => handleClose()} className="flex-1 rounded-lg border border-slate-800 bg-transparent py-2 text-sm font-medium text-slate-400 hover:bg-slate-900 hover:text-slate-200 transition-colors">
             Cancel
           </button>
-          <button className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 transition-colors">
+          <button disabled={!imageFiles.length} onClick={() => handleSubmit()} className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 transition-colors">
             Save Blip
           </button>
         </div>
+        { errorMessage && <span>{errorMessage}</span> }
+        { loading && <div>Some SPinner</div> }
       </motion.div>
     </>
   )

@@ -221,7 +221,6 @@ function CreateMapModal(props: CreateMapModalProps) {
             onDrop={handleImageDrop}
             onDragOver={(e) => e.preventDefault()}
           >
-            <div className="text-2xl mb-1">📸</div>
             <div className="text-xs font-medium text-neutral-200">
               Drop your image here or <label htmlFor="browse" className="text-[#e5484d] hover:underline cursor-pointer font-semibold">Browse</label>
             </div>

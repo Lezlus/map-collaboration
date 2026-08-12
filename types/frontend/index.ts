@@ -39,9 +39,10 @@ export interface BaseExtraProperties {
   userId: string;
   username: string;
   position: Coordinate;
+  featureIdDb: string;
 }
 
-export interface DrawFeatureExtraProperties extends BaseExtraProperties {
+export interface DrawFeatureExtraProperties extends Omit<BaseExtraProperties, "position"> {
   type: "DRAW";
   color: string;
   width: number;
@@ -65,14 +66,19 @@ export interface ImageAssetFeatureExtraProperties extends BaseExtraProperties {
   anchor: number[];
 }
 
+export interface BlipFeatureData {
+  images: string[];
+  title: string;
+  description: string;
+}
+
 export interface BlipFeatureExtraProperties extends BaseExtraProperties {
   type: "BLIP";
-  src: string;
   anchor: number[];
   scale: number;
-  images: string[];
-  audio: string[];
-  video: string[];
+  images: string[];  // CDN S3 Keys
+  // audio: string[];
+  // video: string[];
   title: string;
   description: string;
 }
@@ -82,7 +88,8 @@ export type FeatureExtraProperties = DrawFeatureExtraProperties | TextBoxFeature
 export type CreateFeatureParams = 
   | ["IMAGE", ImageAssetFeatureExtraProperties]
   | ["TEXT", TextBoxFeatureExtraProperties]
-  | ["DRAW", DrawFeatureExtraProperties];
+  | ["DRAW", DrawFeatureExtraProperties]
+  | ["BLIP", BlipFeatureExtraProperties];
 
 export type MapFeatureType = "IMAGE" | "TEXT" | "BLIP" | "DRAW";
 
@@ -104,3 +111,4 @@ export interface MapInstanceItem {
   authorName: string;
   visible: boolean;
 }
+
