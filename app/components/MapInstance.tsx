@@ -8,6 +8,7 @@ import { MouseEvent, useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { updateMapInstance } from "../actions/map-instance-actions";
 import { authClient } from "../lib/auth-client";
+import { useRouter } from "next/navigation";
 
 interface MapInstanceProps {
   mapInstanceItem: MapInstanceItem
@@ -40,7 +41,6 @@ const MapInstanceEditModal = (props: MapInstanceEditModal) => {
       handleModalClose();
     } else { 
       // Display some error
-      console.log(res.message);
       setError("Error Submitting Data");
     }
   }
@@ -115,33 +115,36 @@ const MapInstanceEditModal = (props: MapInstanceEditModal) => {
 }
 
 export default function MapInstance(props: MapInstanceProps) {
+  const router = useRouter();
   const { mapInstanceItem } = props;
   const [modalOpen, setModalOpen] = useState(false);
   const session = authClient.useSession();
-
+  
+  const handleClickMapInstance = () => {
+    router.push(`map/${mapInstanceItem.id}`);
+  }
 
   return (
     <div
       key={mapInstanceItem.id}
+      onClick={() => handleClickMapInstance()}
       className="cursor-pointer bg-neutral-900/50 border border-neutral-800/80 hover:border-neutral-700 rounded-lg p-4 transition-all duration-150 flex items-center justify-between"
     >
-      <Link href={`map/${mapInstanceItem.id}`}>
-        <div className="flex items-center space-x-3 truncate">
-          {/* Status Indicator Dot */}
-          <div className="truncate">
-            <h3 className="text-sm font-medium text-neutral-200 truncate">
-              {mapInstanceItem.instanceName}
-            </h3>
-            <p className="text-xs text-neutral-500 mt-0.5">
-              Updated {dateFormatter(mapInstanceItem.updatedAt)}
-            </p>
-            <p className="text-xs text-neutral-500 mt-0.5">
-              {/* Include a link to  */}
-              Original Creator: <Link href={`/user-creations/${mapInstanceItem.authorId}`}><span className="text-[#e5484d] cursor-pointer">{mapInstanceItem.authorName}</span></Link>
-            </p>
-          </div>
+      <div className="flex items-center space-x-3 truncate">
+        {/* Status Indicator Dot */}
+        <div className="truncate">
+          <h3 className="text-sm font-medium text-neutral-200 truncate">
+            {mapInstanceItem.instanceName}
+          </h3>
+          <p className="text-xs text-neutral-500 mt-0.5">
+            Updated {dateFormatter(mapInstanceItem.updatedAt)}
+          </p>
+          <p className="text-xs text-neutral-500 mt-0.5">
+            {/* Include a link to  */}
+            Original Creator: <Link href={`/user-creations/${mapInstanceItem.authorId}`}><span className="text-[#e5484d] cursor-pointer">{mapInstanceItem.authorName}</span></Link>
+          </p>
         </div>
-      </Link>
+      </div>
       {/* 3 dots Icon */}
       {(session.data?.user.id === mapInstanceItem.authorId) && (
         <>

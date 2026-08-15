@@ -43,13 +43,11 @@ export default function Login() {
   }
 
   const handleGoogleSignInClick = async () => {
-    try {
-      await authClient.signIn.social({
-        provider: "google",
-      });
-    } catch (e) {
-      console.log(e);
-    }
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    });
+
   }
 
   return (
@@ -57,7 +55,7 @@ export default function Login() {
       <div className="w-full max-w-md rounded-2xl p-8 shadow-xl">
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1.5 block text-sm font-medium text-white dark:text-gray-300">
               Email Address
             </label>
             <input
@@ -71,7 +69,7 @@ export default function Login() {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1.5 block text-sm font-medium text-white dark:text-gray-300">
               Password
             </label>
             <input
@@ -90,15 +88,14 @@ export default function Login() {
           >
             Sign In
           </button>
-          <input type="checkbox" name="remember_me_data" />
+          <div className="flex justify-between py-4">
+            <label className="mb-1.5 block text-sm font-medium text-white dark:text-gray-300">
+              Remember Me?
+            </label>
+            <input type="checkbox" name="remember_me_data" />
+          </div>
         </form>
         <p className={ message?.type === "INFO" ? "text-blue-400" : "text-red-600" }>{ message?.message }</p>
-        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-          Dont have an account?{' '}
-          <a href="#register" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
-            Register here
-          </a>
-        </p>
         <button className="gsi-material-button" onClick={handleGoogleSignInClick}>
           <div className="gsi-material-button-state"></div>
           <div className="gsi-material-button-content-wrapper">
@@ -115,6 +112,12 @@ export default function Login() {
             <span style={{ display: "none" }}>Sign in with Google</span>
           </div>
         </button>
+        <p className="mt-6 text-center text-sm text-white dark:text-gray-400">
+          Dont have an account?{' '}
+          <a href="#register" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+            Register here
+          </a>
+        </p>
       </div>
     </div>
   )

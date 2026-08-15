@@ -267,7 +267,6 @@ function InteractivePopover(props: InteractivePopoverProps) {
                 const itemScreenY = operation.position.current.y;
                 const itemScreenX = operation.position.current.x;
                 const position = getCoordinatesRelativeToMap({ x: itemScreenX, y: itemScreenY }, map.current);
-                console.log("Current Position While Dragging Item", position.x, position.y);
               }}
             >
               <div className="grid grid-cols-3 gap-1">
@@ -408,8 +407,7 @@ export default function Map(props: MapProps) {
     // const username = localStorage.getItem(USERNAME_LOCALSTORAGE_NAME);
     // if (!username || !userId) return;
     if (!currentUser) return;
-    console.log(currentUser);
-    const SERVER_URL = new URL(`ws://localhost:8080/ws/${mapData.id}`);
+    const SERVER_URL = new URL(`${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/ws/${mapData.id}`);
     const userId = currentUser.id
     const username = currentUser.username ?? currentUser.name;
 
@@ -439,7 +437,6 @@ export default function Map(props: MapProps) {
             const userSplit = user.split('@');
             const id = userSplit[0];
             const username = userSplit[1];
-            console.log(id, username);
             users.push({
               id,
               username
@@ -450,7 +447,6 @@ export default function Map(props: MapProps) {
       }
       if (data["type"] === "MAP ACTION") {
         const mapData = data as WebSocketMapAction;
-        console.log("New Action", mapData.feature);
         const isUserAction = userMapActionsRef.current.some((action) => action.actionId === mapData.actionId);
         if (!isUserAction && map.current && mapData.feature) {
           const feature = geoJsonFormatter.current.readFeature(mapData.feature) as Feature<Point>;
@@ -475,7 +471,6 @@ export default function Map(props: MapProps) {
     const username = currentUser.username ?? currentUser.name;
 
     map.current = new OlMap();
-    console.log(manifestFile);
     // 1. Your raw image dimensions
     const width = parseInt(manifestFile.mapDimensionsX);
     const height = parseInt(manifestFile.mapDimensionsY);
@@ -511,7 +506,6 @@ export default function Map(props: MapProps) {
     const vectorLayer = new VectorLayer({
       source: vectorSource,
     });
-    console.log(cdnStringifier(manifestFile.mapDirectoryKey));
     const tileGrid = new TileGrid({
       extent,
       origin,
@@ -539,7 +533,6 @@ export default function Map(props: MapProps) {
     })
     map.current.setView(view);
     map.current.addControl(mousePositionControl);    
-    console.log("ZOOM", map.current.getView().getZoom());
     // Adding select interaction
     const selectedStyle = new Style({
       stroke: new Stroke({
@@ -558,7 +551,6 @@ export default function Map(props: MapProps) {
             const feature = map.current?.forEachFeatureAtPixel(e.pixel, (feature) => {
               return feature;
             });
-            console.log(feature);
             if (feature) {
             
             }
@@ -567,23 +559,7 @@ export default function Map(props: MapProps) {
     });
     map.current.addInteraction(selectClick);
     map.current.addInteraction(pointerInteraction);
-    // map.current.on('click', (e) => {
-    //   const [x, y] = e.coordinate;
-    //   const roundX = Math.round(x);
-    //   const roundY = Math.round(y);
-      
-    //   if (roundX >= 0 && roundX <= 1920 && roundY >= 0 && roundY <= 912) {
-    //     console.log("Clicked on Map", `${roundX}-${roundY}`)
-    //   }
-    // });
 
-    // map.current.on("pointermove", (e) => {
-    //   const [x, y] = e.coordinate;
-    //   console.log(x, y);
-    //   const roundX = Math.round(x);
-    //   const roundY = Math.round(y);
-    //   setCursorPosition([roundX, roundY]);
-    // });
     selectClick.on("select", (e) => {
       if (!map.current || e.selected.length === 0) return;
       const vectorLayer = getVectorLayer(map.current);
@@ -628,7 +604,6 @@ export default function Map(props: MapProps) {
           };
           setTextBoxes((prev) => [...prev, textBoxData]);
         } else if (properties.type === "BLIP") {
-          console.log("Setting Blip Viewer")
           setBlipViewer(properties);
         }
       }
@@ -637,7 +612,6 @@ export default function Map(props: MapProps) {
     // Add Features from DB
     mapData.feature.map((dataFeature) => {
       const feature = geoJsonFormatter.current.readFeature(dataFeature.value) as Feature<Point>;
-      console.log(feature);
       addFeature(vectorLayer, dataFeature.action, feature);
     });
 
@@ -912,7 +886,6 @@ export default function Map(props: MapProps) {
       action: "BLIP PLACEMENT",
       id: featureId,
     };
-    console.log("Adding Blip Feature");
     insertFeature(featureAddData)
       .then(res => {
         if (res.success && map.current) {

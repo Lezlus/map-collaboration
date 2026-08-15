@@ -40,7 +40,6 @@ const MapEditModal = (props: MapEditModal) => {
       setError("At least one input field must be set");
       return;
     }
-    console.log(mapUpdate);
     const res = await updateMap(mapUpdate);
     if (res.success) {
       handleModalClose();
@@ -132,6 +131,7 @@ export default function PublishedMap(props: PublishedMapProps) {
             loading="eager"
             src={mapItem.imageUrl}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             alt={mapItem.mapName}
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />

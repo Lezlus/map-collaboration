@@ -1,6 +1,6 @@
 "use client";
 import { authClient } from "@/app/lib/auth-client";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 export default function SignOutButton() {
   const router = useRouter();
@@ -9,6 +9,7 @@ export default function SignOutButton() {
       fetchOptions: {
         onSuccess: () => {
           router.push("/");
+          router.refresh();
         }
       }
     })

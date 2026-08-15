@@ -169,23 +169,23 @@ function CreateMapModal(props: CreateMapModalProps) {
       if (mapNameWarning) {
         setMapNameWarning(undefined);
       }
-      // const map_job_id = uuidv4();
-      // const validDescription = mapDescription.trim().replaceAll(" ", "").length > 4;
-      // const response = await uploadMap({
-      //   mapJobId: map_job_id,
-      //   mapName,
-      //   image: imageFile.file,
-      //   imageHeight: imageFile.height,
-      //   imageSize: imageFile.size,
-      //   imageWidth: imageFile.width,
-      //   description: validDescription ? mapDescription : null,
-      // });
-      // if (response.success && response.map_job) {
-      //   setActiveJob({ mapName, jobId: map_job_id })
-      //   setTimeout(() => {
-      //     handleCloseModal();
-      //   }, 1500);
-      // }
+      const map_job_id = uuidv4();
+      const validDescription = mapDescription.trim().replaceAll(" ", "").length > 4;
+      const response = await uploadMap({
+        mapJobId: map_job_id,
+        mapName,
+        image: imageFile.file,
+        imageHeight: imageFile.height,
+        imageSize: imageFile.size,
+        imageWidth: imageFile.width,
+        description: validDescription ? mapDescription : null,
+      });
+      if (response.success && response.map_job) {
+        setActiveJob({ mapName, jobId: map_job_id })
+        setTimeout(() => {
+          handleCloseModal();
+        }, 1500);
+      }
     }
   }
 

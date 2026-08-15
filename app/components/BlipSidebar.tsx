@@ -121,7 +121,6 @@ export default function BlipSidebar(props: BlipSidebarProps) {
       setImageFiles([]);
     }
     const successfulResponses = responses.filter(res => res.success === "YES");
-    console.log(successfulResponses);
     const successfulUploads: string[] = [];
     await Promise.all(successfulResponses.map(async (response) => {
       try {
@@ -133,15 +132,12 @@ export default function BlipSidebar(props: BlipSidebarProps) {
         }
       } catch (e) {
         if (e instanceof Error) {
-          console.log(e);
           handleClose();
           return;
         }
       }
     }));
-    console.log(successfulUploads);
     const successfulUploadCount = successfulResponses.length - successfulUploads.length;
-    console.log(successfulUploadCount);
     if (successfulUploadCount  !== 0) {
       setErrorMessage("One or more images have failed to upload");
       setTimeout(() => {
@@ -162,7 +158,6 @@ export default function BlipSidebar(props: BlipSidebarProps) {
       title,
       description,
     };
-    console.log(blipFeatureData);
     handleAddBlipFeature(blipFeatureData);
     setLoading(false);
     handleClose();

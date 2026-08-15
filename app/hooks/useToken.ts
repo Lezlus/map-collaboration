@@ -16,7 +16,6 @@ export function useToken() {
         }
       } catch (err) {
         if (err instanceof Error) {
-          console.log("Error", err);
         }
       } finally {
         setIsLoading(false);

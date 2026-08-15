@@ -24,9 +24,7 @@ interface MapUpdateResponse extends Response {
 export async function userMapNameExists(mapName: string, userId: string): Promise<UserMapExistsResponse> {
   // In map rows the 'name' field has an '-master' appended at the end
   const updatedMapName = mapName + "-master";
-  console.log(updatedMapName);
-  const { data, error } = await supabaseClient.from("map").select("*").eq("user_id", userId).ilike("name", updatedMapName);
-  console.log(data);
+  const { data, error } = await supabaseClient.from("map").select("*").eq("user_id", userId).ilike("name", updatedMapName).single();
   if (error) {
     return { message: error.message, exists: false, success: false };
   }
@@ -56,7 +54,6 @@ export async function updateMap(updateData: MapUpdate): Promise<Response> {
     response = { success: true };
   } catch (error) {
     if (error instanceof Error) {
-      console.log(error.message);
       response = { ...response, message: error.message };
     }
   } finally {

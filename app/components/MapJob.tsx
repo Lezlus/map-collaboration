@@ -35,9 +35,7 @@ export default function MapJob() {
         setCurrentState(newState);
       })
       .subscribe((status, err) => {
-        console.log(status);
         if (err) {
-          console.log(err);
         }
       });
       
