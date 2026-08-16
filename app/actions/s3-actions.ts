@@ -3,9 +3,8 @@
 import { s3Client } from "../lib/aws/s3";
 import { PutObjectCommand, S3ServiceException } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { ImageBodyType, Response } from "@/types";
+import { ImageBodyType } from "@/types";
 import { nanoid } from "nanoid";
-import { cdnStringifier } from "@/utils";
 
 
 interface S3ResponseFail {
@@ -26,8 +25,6 @@ export async function generatePreSignedPutObjectUrl(userId: string, body: ImageB
 
   try {
     const { contentType, file } = body;
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
     const fileExtension = file.type.split("/")[1];
     const key = [userId, "images", `${nanoid()}.${fileExtension}`].join('/');
     const command = new PutObjectCommand({

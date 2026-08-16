@@ -4,7 +4,7 @@ import { MapInstanceItem, MapInstanceUpdate } from "@/types";
 import Link from "next/link";
 import { dateFormatter } from "@/utils";
 import Modal from "./Modal";
-import { MouseEvent, useState } from "react";
+import { useState } from "react";
 import { BsThreeDots } from "react-icons/bs";
 import { updateMapInstance } from "../actions/map-instance-actions";
 import { authClient } from "../lib/auth-client";

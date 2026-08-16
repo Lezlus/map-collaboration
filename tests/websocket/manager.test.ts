@@ -1,7 +1,6 @@
 import WebSocketManager from "@/services/WebSocketManager";
 import type { WebSocketEventsType } from "@/services/WebSocketManager";
 import WS from "jest-websocket-mock";
-import { mock } from "node:test";
 
 describe("WebSocketManager", () => {
   let websocket: WebSocketManager;

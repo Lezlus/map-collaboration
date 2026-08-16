@@ -2,7 +2,6 @@ import { betterAuth } from 'better-auth';
 import { Pool } from 'pg';
 import { sendMail } from '@/services/mailService';
 import { after } from 'next/server';
-import { jwt } from 'better-auth/plugins';
 
 export const auth = betterAuth({
   database: new Pool({
@@ -37,7 +36,7 @@ export const auth = betterAuth({
   },
   baseURL: process.env.BETTER_AUTH_URL,
   emailVerification: {
-    sendVerificationEmail: async ({ user, url, token }, request) => {
+    sendVerificationEmail: async ({ user, url }) => {
       after(async () => {
         try {
           await sendMail(user.email, "Verify Your Email", `Click On The Following Link To Verify Your Email ${url}. Your account will be deleted in 3 days if you don't verify`);

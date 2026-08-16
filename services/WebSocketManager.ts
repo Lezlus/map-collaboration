@@ -1,5 +1,3 @@
-type WebSocketEvents = "ONMESSAGE" | "ONOPEN" | "ONCLOSE" | "ONERROR";
-
 export type WebSocketEventsType = 
   | ["ONMESSAGE", (event: MessageEvent) => void]
   | ["ONOPEN", (event: Event) => void]

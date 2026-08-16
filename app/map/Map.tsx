@@ -1,5 +1,5 @@
 "use client";
-import { ChangeEvent, MouseEvent, RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, MouseEvent, RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { default as OlMap } from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
@@ -13,7 +13,7 @@ import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
-import { addUniqueItem, AnimatePresence, motion, useDragControls } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import MousePosition from "ol/control/MousePosition";
 import Image from "next/image";
 import { useDraggable, DragOverlay, DragDropProvider } from "@dnd-kit/react";
@@ -30,13 +30,9 @@ import {
   WebSocketUsersConnected,
   DrawFeatureExtraProperties,
   TextBoxFeatureExtraProperties,
-  USERNAME_LOCALSTORAGE_NAME,
-  USER_ID_LOCALSTORAGE_NAME,
   ImageAssetFeatureExtraProperties,
-  MapFeatureType,
   CreateFeatureParams,
   FeatureExtraProperties,
-  ManifestFileUpload,
   ManifestFile,
   MapAction,
   FeatureCreate,
@@ -50,15 +46,12 @@ import Text from "ol/style/Text";
 import Fill from "ol/style/Fill";
 import Draw from "ol/interaction/Draw";
 import GeoJSON from "ol/format/GeoJSON";
-import { uniqueNamesGenerator, names, Config } from "unique-names-generator";
+import { names, Config } from "unique-names-generator";
 import DrawPenPopover from "@/app/components/toolbar/DrawPenPopover";
 import { ColorResult } from "@uiw/react-color";
 import BlipSidebar from "@/app/components/BlipSidebar";
 import WebSocketManager from "@/services/WebSocketManager";
-import { use } from "react";
-import { authClient } from "@/app/lib/auth-client";
-import { getMapInstance, MapInstancePopulated } from "@/app/actions/map-instance-actions";
-import { notFound } from "next/navigation";
+import { MapInstancePopulated } from "@/app/actions/map-instance-actions";
 import { v4 as uuidv4 } from "uuid";
 import { insertFeature } from "../actions";
 import { cdnStringifier } from "@/utils/cdnUrlStringifier";
@@ -67,10 +60,6 @@ import { useUser } from "../hooks/useUser";
 import { deleteFeature } from "../actions/feature-actions";
 import { BlipFeatureExtraProperties } from "@/types/frontend";
 import BlipViewer from "../components/BlipViewer";
-
-const customConfig: Config = {
-  dictionaries: [names],
-}
 
 const MAX_HEIGHT = 912;
 const MAX_WIDTH = 1920;
@@ -374,6 +363,9 @@ export default function Map(props: MapProps) {
   // DrawPenPopover States
   const [penColor, setPenColor] = useState("#fff");
   const [penSize, setPenSize] = useState(2);
+
+  const [isSocketError, setIsSocketError] = useState(false);
+
   const penColorRef = useRef(penColor);
   const penSizeRef = useRef(penSize);
 
@@ -416,6 +408,7 @@ export default function Map(props: MapProps) {
 
     WebSocketManager.connect(WEBSOCKET_NAME, SERVER_URL);
     const onOpenCallback = (ev: Event) => {
+      setIsSocketError(false);
       const data: WebSocketMapAction = {
         type: "MAP ACTION",
         userId: currentUser.id,
@@ -456,8 +449,14 @@ export default function Map(props: MapProps) {
         }
       }
     }
+    const onErrorCallback = (ev: Event) => {
+      // We can follow a fail-fast approach
+      // IF error we will not let any user make edits to the map
+      setIsSocketError(true);
+    }
     WebSocketManager.addEvent(WEBSOCKET_NAME, ["ONOPEN", onOpenCallback])
     WebSocketManager.addEvent(WEBSOCKET_NAME, ["ONMESSAGE", onMessageCallback]);
+    WebSocketManager.addEvent(WEBSOCKET_NAME, ["ONERROR", onErrorCallback]);
     return () => {
       WebSocketManager.closeConnection(WEBSOCKET_NAME);
     }
@@ -932,28 +931,33 @@ export default function Map(props: MapProps) {
 
       {/* Connected Users */}
       <div className="absolute top-4 right-4 z-20 select-none rounded-xl border border-slate-700/40 bg-slate-900/80 p-3 shadow-2xl backdrop-blur-md">
-        <div className="mb-2 flex items-center justify-between border-b border-slate-800/60 pb-1.5 px-1">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Connected ({connectedUsers.length || 0})
-          </span>
-        </div>
-
-        <div className="flex max-w-xs gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {[...connectedUsers].map((user) => (
-            <div 
-              key={user.id} 
-              className="flex items-center gap-2 whitespace-nowrap rounded-full bg-slate-800/60 pl-2.5 pr-3 py-1 border border-slate-700/30 hover:bg-slate-800 transition-colors"
-            >
-              <span className="relative flex h-2 w-2 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span>
+        { isSocketError && (
+          <>
+            <div className="mb-2 flex items-center justify-between border-b border-slate-800/60 pb-1.5 px-1">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Connected ({connectedUsers.length || 0})
               </span>
-              <p className="text-xs font-medium text-slate-200">
-                {user.username}
-              </p>
             </div>
-          ))}
-        </div>
+
+          <div className="flex max-w-xs gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {[...connectedUsers].map((user) => (
+              <div 
+                key={user.id} 
+                className="flex items-center gap-2 whitespace-nowrap rounded-full bg-slate-800/60 pl-2.5 pr-3 py-1 border border-slate-700/30 hover:bg-slate-800 transition-colors"
+              >
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span>
+                </span>
+                <p className="text-xs font-medium text-slate-200">
+                  {user.username}
+                </p>
+              </div>
+            ))}
+          </div>
+          </>
+        ) }
+
       </div>
 
       {/* Feature Tooltip */}
@@ -1038,7 +1042,7 @@ export default function Map(props: MapProps) {
 
         {tools.map((tool) => {
           const isActive = mapActionState === tool.state;
-          if (!currentUser.validated) {
+          if (!currentUser.validated || isSocketError) {
             if (tool.state !== "MOVE" && tool.state !== "SELECT") {
               return;
             }

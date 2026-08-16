@@ -1,7 +1,7 @@
 "use client"
 import { motion } from "framer-motion"
 import { Circle, ColorResult } from "@uiw/react-color"
-import { ChangeEvent, useState } from "react"
+import { ChangeEvent } from "react"
 
 interface DrawPenPopoverProps {
   hex: string;

@@ -3,7 +3,6 @@ import Link from "next/link"
 import { auth } from "@/app/lib/auth"
 import { headers } from "next/headers"
 import { SearchBar } from "./navbar-components/SearchbarComponent";
-import { authClient } from "../lib/auth-client";
 import CreateNewMapButton from "./navbar-components/CreateNewMapButton";
 import SignOutButton from "./navbar-components/SignOutButton";
 

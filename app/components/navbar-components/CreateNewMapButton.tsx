@@ -12,7 +12,7 @@ import { authClient } from "@/app/lib/auth-client";
 import Modal from "../Modal";
 
 const MB_SIZE_BYTES = 1048576
-const GB_SIZE_BYTES = 1073741824
+// const GB_SIZE_BYTES = 1073741824
 const PNG_WEBP_LIMIT = 50 * MB_SIZE_BYTES;
 const JPG_LIMIT = 2 * MB_SIZE_BYTES;
 const TIFF_LIMIT = 500 * MB_SIZE_BYTES;

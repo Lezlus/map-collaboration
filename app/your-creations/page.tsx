@@ -5,9 +5,6 @@ import { headers } from "next/headers";
 import { getUserPublishedMaps, getUserMapInstances } from "../actions/user-data";
 import { ManifestFileUpload } from "@/types";
 import { MapItem, MapInstanceItem } from "@/types";
-import Image from "next/image";
-import Link from "next/link";
-import { dateFormatter } from "@/utils";
 import PublishedMap from "../components/PublishedMap";
 import MapInstance from "../components/MapInstance";
 

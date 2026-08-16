@@ -1,5 +1,5 @@
-import { email, int, number, z } from 'zod';
-import { FeatureAction, MapAction } from '../frontend';
+import { z } from 'zod';
+import { FeatureAction } from '../frontend';
 
 export const SessionUser = z.object({
   id: z.string(),

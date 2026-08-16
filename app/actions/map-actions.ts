@@ -1,17 +1,13 @@
 "use server";
 
 import { supabaseClient } from "@/utils/supabase/client";
-import { Response, MapUpdate, PublishedMap } from "@/types";
+import { Response, MapUpdate } from "@/types";
 import { auth } from "../lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
 interface UserMapExistsResponse extends Response {
   exists: boolean;
-}
-
-interface MapUpdateResponse extends Response {
-  data?: PublishedMap
 }
 
 /**

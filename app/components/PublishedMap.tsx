@@ -2,7 +2,6 @@
 
 import { MapItem, MapUpdate } from "@/types";
 import Image from "next/image";
-import Link from "next/link";
 import { dateFormatter } from "@/utils";
 import { createMapInstance } from "../actions/map-instance-actions";
 import { authClient } from "../lib/auth-client";
